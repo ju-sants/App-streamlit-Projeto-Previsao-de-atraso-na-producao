@@ -157,3 +157,16 @@ class meta_preditors(BaseEstimator, TransformerMixin):
         df_meta_predictions = df_meta_predictions.apply(lambda row: row.apply(lambda col: round(col)), axis=1)
 
         return df_meta_predictions
+
+
+# class final_preditors(BaseEstimator, TransformerMixin):
+
+
+def create_pipe():
+    from sklearn.pipeline import Pipeline
+
+    pipe = Pipeline(['preprocess', pre_process(),
+                    'base_preditors', base_preditors(),
+                    'meta_preditors', meta_preditors()])
+    
+    return pipe
