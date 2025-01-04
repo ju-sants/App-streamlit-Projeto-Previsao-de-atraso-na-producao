@@ -1,12 +1,11 @@
+import pandas as pd
+from sklearn import set_config
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, MinMaxScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 
+set_config(transform_output='pandas')
 
 class pre_process(BaseEstimator, TransformerMixin):
-    import pandas as pd
-
-    from sklearn import set_config
-
-    set_config(transform_output='pandas')
     
     def __init__(self):
         from sklearn.preprocessing import LabelEncoder, OneHotEncoder, MinMaxScaler, MinMaxScaler
