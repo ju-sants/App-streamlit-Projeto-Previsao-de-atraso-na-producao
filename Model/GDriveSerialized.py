@@ -6,7 +6,7 @@ def get_model():
 
     file = requests.get(url)
 
-    with open('Model/trained_model.pkl', 'wb') as f:
+    with open('Model/trained_pipeline.pkl', 'wb') as f:
         f.write(file.content)
 
     with open('Model/trained_pipeline.pkl', 'rb') as f:
@@ -16,4 +16,3 @@ def get_model():
 
 if __name__ == '__main__':
     model = get_model()
-    print(model.predict([[1, 2, 3, 4]]))
