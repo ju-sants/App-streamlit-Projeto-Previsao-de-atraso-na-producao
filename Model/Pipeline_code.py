@@ -1,14 +1,16 @@
 import pandas as pd
-from sklearn import set_config
+
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, MinMaxScaler
 from sklearn.base import BaseEstimator, TransformerMixin
 
-set_config(transform_output='pandas')
 
 class pre_process(BaseEstimator, TransformerMixin):
     
     def __init__(self):
         from sklearn.preprocessing import LabelEncoder, OneHotEncoder, MinMaxScaler, MinMaxScaler
+        from sklearn import set_config
+
+        set_config(transform_output='pandas')
 
         self.media_por_item = {
           '0413131': 45.707045735475894, 'I751401': 12.75,
@@ -31,7 +33,7 @@ class pre_process(BaseEstimator, TransformerMixin):
         dummies = self.onehot.fit_transform(X.drop(columns=['ITEM UNIFICADO', 'QTD']))
         df = pd.concat([itemOrdinal, numeric_cols, dummies], axis=1)
 
-        df['Dias Atrasado_media_por_item'] = X['ITEM UNIFICADO'].apply(lambda x: self.media_por_item[x])
+        df['Dias Atrasado_media_por_item'] = X['ITEM UNIFICADO'].apply(lambda x: self.media_por_item.get(x, 0))
 
         if not self.fitted_:
           self.labelencoder.fit(X[['ITEM UNIFICADO']])
@@ -42,6 +44,11 @@ class pre_process(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
+        
+        from sklearn import set_config
+
+        set_config(transform_output='pandas')
+        
 
         if not self.fitted_:
           raise Exception('You must train dataset first')
@@ -90,7 +97,7 @@ class base_preditors(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
-
+        
         df_base_predictions = pd.DataFrame()
 
         df_base_predictions['DTR'] = self.DTR.predict(X)
@@ -164,9 +171,29 @@ class meta_preditors(BaseEstimator, TransformerMixin):
 
 def create_pipe():
     from sklearn.pipeline import Pipeline
+    from sklearn.model_selection import train_test_split
+    import pandas as pd
+    import cloudpickle
 
-    pipe = Pipeline(['preprocess', pre_process(),
-                    'base_preditors', base_preditors(),
-                    'meta_preditors', meta_preditors()])
+    df_scaled = pd.read_excel('Data/processed/df_scaled.xlsx')
+    df_prepared = pd.read_excel('Data/midprocess/df_prepared_fase1.xlsx')
+
+    X = df_scaled
+    y = df_prepared['Dias Atrasado']
+
+    x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    pipe = Pipeline([('preprocess', pre_process()),
+                    ('base_preditors', base_preditors()),
+                    ('meta_preditors', meta_preditors())])
+    
+    pipe.fit(x_train, y_train)
+
+    with open('Model/trained_pipeline.pkl', 'wb') as file:
+        cloudpickle.dump(pipe, file)
     
     return pipe
+
+if __name__ == '__main__':
+    create_pipe()
+    print('Pipeline criado com sucesso!')
