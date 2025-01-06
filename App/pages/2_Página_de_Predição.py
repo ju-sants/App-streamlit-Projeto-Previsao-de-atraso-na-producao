@@ -19,7 +19,7 @@ st.title('Previsão de Dias atrasados na produção.')
 
 
 
-# ----------------- Dados de entrada ----------------- #
+# ----------------- Dados de entrada do usuário ----------------- #
 
 dict2df = {
         'ITEM UNIFICADO': [],
@@ -44,10 +44,9 @@ if col_butt2.button('Remover item'):
         st.session_state.df_for_pred = st.session_state.df_for_pred[:-1]
 
 
+# ----------------- Setando Dados para o modelo ----------------- #
+
 df_for_pred = st.session_state.df_for_pred.copy()
-
-
-# ----------------- Visualizando predições ----------------- #
 
 st.sidebar.write(df_for_pred)
 
@@ -57,6 +56,9 @@ df_for_pred_auto['PRESTADOR OU AUTOMAÇÃO'] = 'AUTOMAÇÃO'
 
 df_for_pred_prestador = df_for_pred.copy()
 df_for_pred_prestador['PRESTADOR OU AUTOMAÇÃO'] = 'PRESTADOR'
+
+# ----------- Desserializando modelo e criando predições  ----------- #
+
 
 with open('Model/trained_pipeline.pkl', 'rb') as file:
     trained_pipeline = cloudpickle.load(file)
@@ -68,7 +70,12 @@ try:
 
 except:
 
-    pass
+    st.write('\n\n\n\n\n\n\n')
+    st.image('App\Imgs\espera_pag_predi.png')
+    st.markdown('### ***Tente adicionar itens para visualizar as previsões!***')
+
+
+# ----------------- Exibição dos resultados ----------------- #
 
 else:
 
@@ -76,7 +83,61 @@ else:
 
     if st.session_state.type_exibition == 'Resumo':
 
-        st.write('Trabalhando...')
+
+        for line in range(len(df_for_pred)):
+
+            st.markdown('***Na a situação abaixo...***')
+            st.write(df_for_pred.iloc[line].to_frame().T)
+            st.write('**Temos:**')
+
+            
+            mean_auto = prediction_auto.iloc[line].T.mean()
+            mean_prest = prediction_prest.iloc[line].T.mean()
+
+            max_auto = prediction_auto.iloc[line].T.max()
+            max_prest = prediction_prest.iloc[line].T.max()
+
+            min_auto = prediction_auto.iloc[line].T.min()
+            min_prest = prediction_prest.iloc[line].T.min()
+
+
+
+            prediction_line_auto = prediction_auto.iloc[line]
+            prediction_line_prest = prediction_prest.iloc[line]
+
+            predictions_line = pd.concat([prediction_line_auto, prediction_line_prest])
+            
+
+
+            st.markdown(f'- **Uma média GERAL de: {predictions_line.mean()} dia(s) de atraso**')
+
+            if min([mean_auto, min_prest]) == mean_auto:
+                st.markdown(f'- **Para este caso, o montador com menor chance de atraso foi AUTOMAÇÃO com: {mean_auto} dia(s)**')
+            else:
+                st.markdown(f'- **Para este caso, o montador com menor chance de atraso foi PRESTADOR com: {min_prest} dia(s)**')
+
+            st.write('&nbsp;', unsafe_allow_html=True)
+            st.write('<div style="text-align: center; font-weight: bold;">Comparando as previsões...<div>', unsafe_allow_html=True)
+            st.write('&nbsp;', unsafe_allow_html=True)
+
+
+            col_resumo_auto, middle, col_resumo_prest = st.columns(3)
+
+            col_resumo_auto.markdown('Para ***AUTOMAÇÃO***: ')
+            col_resumo_auto.write(f'Média de atraso de: {mean_auto} dia(s)')
+            col_resumo_auto.write(f'Maior previsão de atraso: {max_auto} dia(s)')
+            col_resumo_auto.write(f'Menor previsão de atraso: {min_auto} dia(s)')
+
+            middle.markdown('<div style="text-align: center; font-weight: bold;">VERSUS</div>', unsafe_allow_html=True)
+
+            col_resumo_prest.markdown('Para ***PRESTADOR***: ')
+            col_resumo_prest.write(f'Média de atraso de: {mean_prest} dia(s)')
+            col_resumo_prest.write(f'Maior previsão de atraso: {max_prest} dia(s)')
+            col_resumo_prest.write(f'Menor previsão de atraso: {min_prest} dia(s)')
+
+
+            st.markdown('---')
+
 
     elif st.session_state.type_exibition == 'Detalhes':
         

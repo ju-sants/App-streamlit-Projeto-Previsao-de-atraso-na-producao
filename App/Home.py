@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.set_page_config(page_title="Home", page_icon=r"C:\Users\yamim\OneDrive\Documentos\App Streamlit Projeto Predição Dias Atrasados\Imgs\Home_PageIcon1.png", layout="wide")
+st.set_page_config(page_title="Home", page_icon="App\Imgs\Home_PageIcon1.png", layout="wide")
 
 st.title('Descrição do Projeto')
 
