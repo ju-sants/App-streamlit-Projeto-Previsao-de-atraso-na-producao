@@ -6,10 +6,10 @@ def get_model():
 
     file = requests.get(url)
 
-    with open('App/Model/trained_pipeline.pkl', 'wb') as f:
+    with open('Model/trained_pipeline.pkl', 'wb') as f:
         f.write(file.content)
 
-    with open('App/Model/trained_pipeline.pkl', 'rb') as f:
+    with open('Model/trained_pipeline.pkl', 'rb') as f:
         model = cloudpickle.load(f)
         
     return model
