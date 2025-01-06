@@ -8,6 +8,12 @@ from utils import itens, capture_item
 if not 'df_for_pred' in st.session_state:
     st.session_state.df_for_pred = pd.DataFrame(columns=['ITEM UNIFICADO', 'QTD', 'PROCESSO'])
 
+if not 'type_exibition' in st.session_state:
+    st.session_state.type_exibition = 'Resumo'
+
+if not 'type_detail' in st.session_state:
+    st.session_state.type_detail = 'Tabelas'
+
 
 st.title('Previsão de Dias atrasados na produção.')
 
@@ -65,8 +71,18 @@ except:
     pass
 
 else:
-    if st.button('Mostrar todas as predições'):
-        if st.button('Tabelas'):
+
+    type_exibition = st.selectbox('Selecione o tipo de exibição: ', ['Resumo', 'Detalhes'], key='type_exibition')
+
+    if st.session_state.type_exibition == 'Resumo':
+
+        st.write('Trabalhando...')
+
+    elif st.session_state.type_exibition == 'Detalhes':
+        
+        type_detail = st.selectbox('Selecione o tipo de disposição dos dados: ', ['Tabelas', 'Informações', 'Não quero ver nada'], key='type_detail')
+
+        if type_detail == 'Tabelas':
 
             st.subheader('Previsão de atraso para AUTOMAÇÃO: ')
             st.write(prediction_auto)
@@ -74,7 +90,9 @@ else:
             st.subheader('Previsão de atraso para PRESTADOR: ')
             st.write(prediction_prest)
 
-        if st.button('Informações'):
+        elif type_detail == 'Informações':
+
+
             col__results_auto, col__results_prest = st.columns(2)
 
             col__results_auto.write('Previsão de atraso para AUTOMAÇÃO: ')
@@ -86,3 +104,6 @@ else:
             for column, lines in prediction_prest.items():
                 values = ', '.join(map(str, lines.values))
                 col__results_prest.write(f'Para o modelo {column} entre: {values} dia(s) atrasado')
+
+        else:
+            st.write('Nada por aqui...')
