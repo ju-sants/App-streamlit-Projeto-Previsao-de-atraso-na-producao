@@ -6,6 +6,8 @@ from utils import inicialize_variables, get_first_data, set_data_for_modeling, g
 
 # ----------------- Inicializando ambiente ----------------- #
 
+st.set_page_config(page_title='Página de Predição', layout='wide', page_icon='App\Imgs\Home_PageIcon1.png')
+
 inicialize_variables()
 
 
@@ -37,27 +39,51 @@ else:
 
     type_exibition = st.selectbox('Selecione o tipo de exibição: ', ['Resumo', 'Detalhes'], key='type_exibition')
 
-    if st.session_state.type_exibition == 'Resumo':
+    for line in range(len(df_for_pred)):
+     
+        mean_auto = prediction_auto.iloc[line].T.mean()
+        mean_prest = prediction_prest.iloc[line].T.mean()
 
-        st.write('Trabalhando nisso...')
-        
+        max_auto = prediction_auto.iloc[line].T.max()
+        max_prest = prediction_prest.iloc[line].T.max()
 
-    elif st.session_state.type_exibition == 'Detalhes':
-        for line in range(len(df_for_pred)):
+        min_auto = prediction_auto.iloc[line].T.min()
+        min_prest = prediction_prest.iloc[line].T.min()
+
+        metricas = {
+            'Média': [mean_auto, mean_prest],
+            'Máximo': [max_auto, max_prest],
+            'Mínimo': [min_auto, min_prest]
+        }
+
+
+        if st.session_state.type_exibition == 'Resumo':
+            
+            metrica = st.radio('Selecione a métrica: ', ['Média', 'Máximo', 'Mínimo'], key=f'metrica_{line}')
+
+            col_resumo_auto, middle, col_resumo_prest = st.columns(3)
+
+            col_resumo_auto.markdown('### ***AUTOMAÇÃO***: ')
+            col_resumo_auto.write(f'## {metricas[metrica][0]}')
+            col_resumo_auto.write(f'Obs: {metrica}')
+
+            middle.markdown('<div style="text-align: center; font-weight: bold;">VERSUS</div>', unsafe_allow_html=True)
+
+            col_resumo_prest.markdown('### ***PRESTADOR***: ')
+            col_resumo_prest.write(f'## {metricas[metrica][1]}')
+            col_resumo_prest.write(f'Obs: {metrica}')
+
+            st.write('Para os dados:', df_for_pred.iloc[line].to_frame().T)
+
+            st.write('&nbsp;', unsafe_allow_html=True)
+            st.markdown('---')
+            
+
+        elif st.session_state.type_exibition == 'Detalhes':
 
             st.markdown('***Na a situação abaixo...***')
             st.write(df_for_pred.iloc[line].to_frame().T)
             st.write('**Temos:**')
-
-            
-            mean_auto = prediction_auto.iloc[line].T.mean()
-            mean_prest = prediction_prest.iloc[line].T.mean()
-
-            max_auto = prediction_auto.iloc[line].T.max()
-            max_prest = prediction_prest.iloc[line].T.max()
-
-            min_auto = prediction_auto.iloc[line].T.min()
-            min_prest = prediction_prest.iloc[line].T.min()
 
 
 
@@ -80,19 +106,19 @@ else:
             st.write('&nbsp;', unsafe_allow_html=True)
 
 
-            col_resumo_auto, middle, col_resumo_prest = st.columns(3)
+            col_detail_auto, middle, col_detail_prest = st.columns(3)
 
-            col_resumo_auto.markdown('Para ***AUTOMAÇÃO***: ')
-            col_resumo_auto.write(f'Média de atraso de: {mean_auto} dia(s)')
-            col_resumo_auto.write(f'Maior previsão de atraso: {max_auto} dia(s)')
-            col_resumo_auto.write(f'Menor previsão de atraso: {min_auto} dia(s)')
+            col_detail_auto.markdown('Para ***AUTOMAÇÃO***: ')
+            col_detail_auto.write(f'Média de atraso de: {mean_auto} dia(s)')
+            col_detail_auto.write(f'Maior previsão de atraso: {max_auto} dia(s)')
+            col_detail_auto.write(f'Menor previsão de atraso: {min_auto} dia(s)')
 
             middle.markdown('<div style="text-align: center; font-weight: bold;">VERSUS</div>', unsafe_allow_html=True)
 
-            col_resumo_prest.markdown('Para ***PRESTADOR***: ')
-            col_resumo_prest.write(f'Média de atraso de: {mean_prest} dia(s)')
-            col_resumo_prest.write(f'Maior previsão de atraso: {max_prest} dia(s)')
-            col_resumo_prest.write(f'Menor previsão de atraso: {min_prest} dia(s)')
+            col_detail_prest.markdown('Para ***PRESTADOR***: ')
+            col_detail_prest.write(f'Média de atraso de: {mean_prest} dia(s)')
+            col_detail_prest.write(f'Maior previsão de atraso: {max_prest} dia(s)')
+            col_detail_prest.write(f'Menor previsão de atraso: {min_prest} dia(s)')
 
 
             st.markdown('---')
