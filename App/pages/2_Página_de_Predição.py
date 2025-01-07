@@ -1,79 +1,35 @@
 import streamlit as st
 import pandas as pd
-import cloudpickle
 
-from utils import itens, capture_item
+from utils import inicialize_variables, get_first_data, set_data_for_modeling, get_predictions
 
 
-if not 'df_for_pred' in st.session_state:
-    st.session_state.df_for_pred = pd.DataFrame(columns=['ITEM UNIFICADO', 'QTD', 'PROCESSO'])
+# ----------------- Inicializando ambiente ----------------- #
 
-if not 'type_exibition' in st.session_state:
-    st.session_state.type_exibition = 'Resumo'
-
-if not 'type_detail' in st.session_state:
-    st.session_state.type_detail = 'Tabelas'
+inicialize_variables()
 
 
 st.title('Previsão de Dias atrasados na produção.')
 
-
-
 # ----------------- Dados de entrada do usuário ----------------- #
 
-dict2df = {
-        'ITEM UNIFICADO': [],
-        'QTD': [],
-        'PROCESSO': [],
-    }
-
-
-ITEM_UNIFICADO = capture_item(st.sidebar.selectbox('Selecione um Item: ', itens))
-
-QTD = st.sidebar.number_input('Indique a quantidade: ', min_value=1, max_value=1000000000000000, value=1)
-
-PROCESSO = st.sidebar.selectbox('Selecione o processo de produção: ', ['REBITAR AUTOMATICO', 'CORTAR FIO', 'EMBALAGEM PLAFON'])
-
-col_butt1, col_butt2 = st.sidebar.columns(2)
-
-if col_butt1.button('Adicionar item'):
-    st.session_state.df_for_pred.loc[len(st.session_state.df_for_pred)] = {'ITEM UNIFICADO': ITEM_UNIFICADO, 'QTD': QTD, 'PROCESSO': PROCESSO}
-
-if col_butt2.button('Remover item'):
-    if not st.session_state.df_for_pred.empty:
-        st.session_state.df_for_pred = st.session_state.df_for_pred[:-1]
-
+df_for_pred = get_first_data()
 
 # ----------------- Setando Dados para o modelo ----------------- #
 
-df_for_pred = st.session_state.df_for_pred.copy()
-
-st.sidebar.write(df_for_pred)
-
-
-df_for_pred_auto = df_for_pred.copy()
-df_for_pred_auto['PRESTADOR OU AUTOMAÇÃO'] = 'AUTOMAÇÃO'
-
-df_for_pred_prestador = df_for_pred.copy()
-df_for_pred_prestador['PRESTADOR OU AUTOMAÇÃO'] = 'PRESTADOR'
+df_for_pred_auto, df_for_pred_prestador = set_data_for_modeling()
 
 # ----------- Desserializando modelo e criando predições  ----------- #
 
 
-with open('Model/trained_pipeline.pkl', 'rb') as file:
-    trained_pipeline = cloudpickle.load(file)
-
 try:
-
-    prediction_auto = trained_pipeline.transform(df_for_pred_auto)
-    prediction_prest = trained_pipeline.transform(df_for_pred_prestador)
+    prediction_auto, prediction_prest = get_predictions(df_for_pred_auto, df_for_pred_prestador)
 
 except:
 
-    st.write('\n\n\n\n\n\n\n')
+    st.write('&nbsp;', unsafe_allow_html=True)
     st.image('App\Imgs\espera_pag_predi.png')
     st.markdown('### ***Tente adicionar itens para visualizar as previsões!***')
-
 
 # ----------------- Exibição dos resultados ----------------- #
 
@@ -83,7 +39,10 @@ else:
 
     if st.session_state.type_exibition == 'Resumo':
 
+        st.write('Trabalhando nisso...')
+        
 
+    elif st.session_state.type_exibition == 'Detalhes':
         for line in range(len(df_for_pred)):
 
             st.markdown('***Na a situação abaixo...***')
@@ -111,10 +70,10 @@ else:
 
             st.markdown(f'- **Uma média GERAL de: {predictions_line.mean()} dia(s) de atraso**')
 
-            if min([mean_auto, min_prest]) == mean_auto:
+            if min([mean_auto, mean_prest]) == mean_auto:
                 st.markdown(f'- **Para este caso, o montador com menor chance de atraso foi AUTOMAÇÃO com: {mean_auto} dia(s)**')
             else:
-                st.markdown(f'- **Para este caso, o montador com menor chance de atraso foi PRESTADOR com: {min_prest} dia(s)**')
+                st.markdown(f'- **Para este caso, o montador com menor chance de atraso foi PRESTADOR com: {mean_prest} dia(s)**')
 
             st.write('&nbsp;', unsafe_allow_html=True)
             st.write('<div style="text-align: center; font-weight: bold;">Comparando as previsões...<div>', unsafe_allow_html=True)
@@ -139,32 +98,36 @@ else:
             st.markdown('---')
 
 
-    elif st.session_state.type_exibition == 'Detalhes':
-        
-        type_detail = st.selectbox('Selecione o tipo de disposição dos dados: ', ['Tabelas', 'Informações', 'Não quero ver nada'], key='type_detail')
 
-        if type_detail == 'Tabelas':
+            if st.checkbox('Mostrar Tabelas com as predições de todos os modelos', key=f'checkbox_tables_{line}'):
+                
+                st.write('#### ***Obs: Cada coluna representa um modelo preditivo!***')
 
-            st.subheader('Previsão de atraso para AUTOMAÇÃO: ')
-            st.write(prediction_auto)
+                st.subheader('Previsões de atraso para AUTOMAÇÃO: ')
+                st.write(prediction_auto.iloc[line].to_frame().T.iloc[:, :6])
+                st.write(prediction_auto.iloc[line].to_frame().T.iloc[:, 6:])
+                
 
-            st.subheader('Previsão de atraso para PRESTADOR: ')
-            st.write(prediction_prest)
+                st.subheader('Previsões de atraso para PRESTADOR: ')
+                st.write(prediction_prest.iloc[line].to_frame().T.iloc[:, :6])
+                st.write(prediction_prest.iloc[line].to_frame().T.iloc[:, 6:])
 
-        elif type_detail == 'Informações':
+
+            if st.checkbox('Informações', key=f'checkbox_informations_{line}'):
 
 
-            col__results_auto, col__results_prest = st.columns(2)
+                col_results_auto, col_results_prest = st.columns(2)
 
-            col__results_auto.write('Previsão de atraso para AUTOMAÇÃO: ')
-            for column, lines in prediction_auto.items():
-                values = ', '.join(map(str, lines.values))
-                col__results_auto.write(f'Para o modelo {column} entre: {values} dia(s) atrasado')
 
-            col__results_prest.write('Previsão de atraso para PRESTADOR: ')
-            for column, lines in prediction_prest.items():
-                values = ', '.join(map(str, lines.values))
-                col__results_prest.write(f'Para o modelo {column} entre: {values} dia(s) atrasado')
+                col_results_auto.write('Previsões de atraso para AUTOMAÇÃO: ')
+                for column, lines in prediction_auto.iloc[line].to_frame().T.items():
+                    values = ', '.join(map(str, lines.values))
+                    col_results_auto.write(f'Para o modelo {column} entre: {values} dia(s) atrasado')
 
-        else:
-            st.write('Nada por aqui...')
+                col_results_prest.write('Previsões de atraso para PRESTADOR: ')
+                for column, lines in prediction_prest.iloc[line].to_frame().T.items():
+                    values = ', '.join(map(str, lines.values))
+                    col_results_prest.write(f'Para o modelo {column} entre: {values} dia(s) atrasado')
+
+            else:
+                st.markdown('---')

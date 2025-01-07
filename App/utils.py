@@ -29,3 +29,74 @@ def capture_item(concatenated_item):
     splitted_item = concatenated_item.split(' ')[2]
 
     return splitted_item
+
+def inicialize_variables():
+
+    import streamlit as st
+    import pandas as pd
+
+    if not 'df_for_pred' in st.session_state:
+        st.session_state.df_for_pred = pd.DataFrame(columns=['ITEM UNIFICADO', 'QTD', 'PROCESSO'])
+
+    if not 'type_exibition' in st.session_state:
+        st.session_state.type_exibition = 'Resumo'
+
+    if not 'type_detail' in st.session_state:
+        st.session_state.type_detail = 'Tabelas'
+
+
+def get_first_data():
+
+    import streamlit as st
+
+
+    ITEM_UNIFICADO = capture_item(st.sidebar.selectbox('Selecione um Item: ', itens))
+
+    QTD = st.sidebar.number_input('Indique a quantidade: ', min_value=1, max_value=1000000000000000, value=1)
+
+    PROCESSO = st.sidebar.selectbox('Selecione o processo de produção: ', ['REBITAR AUTOMATICO', 'CORTAR FIO', 'EMBALAGEM PLAFON'])
+
+    col_butt1, col_butt2 = st.sidebar.columns(2)
+
+    if col_butt1.button('Adicionar item'):
+        st.session_state.df_for_pred.loc[len(st.session_state.df_for_pred)] = {'ITEM UNIFICADO': ITEM_UNIFICADO, 'QTD': QTD, 'PROCESSO': PROCESSO}
+
+    if col_butt2.button('Remover item'):
+        if not st.session_state.df_for_pred.empty:
+            st.session_state.df_for_pred = st.session_state.df_for_pred[:-1]
+
+    return st.session_state.df_for_pred
+
+def set_data_for_modeling():
+
+    import streamlit as st
+
+    df_for_pred = st.session_state.df_for_pred.copy()
+
+    st.sidebar.write(df_for_pred)
+
+
+    df_for_pred_auto = df_for_pred.copy()
+    df_for_pred_auto['PRESTADOR OU AUTOMAÇÃO'] = 'AUTOMAÇÃO'
+
+    df_for_pred_prestador = df_for_pred.copy()
+    df_for_pred_prestador['PRESTADOR OU AUTOMAÇÃO'] = 'PRESTADOR'
+
+    return df_for_pred_auto, df_for_pred_prestador
+
+
+def get_predictions(df_for_pred_auto, df_for_pred_prestador):
+
+    import streamlit as st
+    import cloudpickle
+
+    with open('Model/trained_pipeline.pkl', 'rb') as file:
+        trained_pipeline = cloudpickle.load(file)
+
+
+    prediction_auto = trained_pipeline.transform(df_for_pred_auto)
+    prediction_prest = trained_pipeline.transform(df_for_pred_prestador)
+
+    return prediction_auto, prediction_prest
+
+    
