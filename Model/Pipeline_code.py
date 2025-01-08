@@ -131,6 +131,8 @@ class meta_preditors(BaseEstimator, TransformerMixin):
         self.META_RFR = RandomForestRegressor()
         self.META_RFR_tunned = RandomForestRegressor(max_features='sqrt', n_estimators=20, max_depth=5, min_samples_leaf=2, min_samples_split=5)
 
+        self.models = [self.META_KNN, self.META_KNN_tunned, self.META_LR_tunned, self.META_LR, self.META_GBR, self.META_GBR_tunned, self.META_DTR, self.META_DTR_tunned, self.META_RFR, self.META_RFR_tunned]
+
 
     def fit(self, X=None, y=None):
 
@@ -163,7 +165,7 @@ class meta_preditors(BaseEstimator, TransformerMixin):
 
         df_meta_predictions = df_meta_predictions.apply(lambda row: row.apply(lambda col: round(col)), axis=1)
 
-        return df_meta_predictions
+        return models, df_meta_predictions
 
 
 # class final_preditors(BaseEstimator, TransformerMixin):

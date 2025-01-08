@@ -24,6 +24,17 @@ itens = ['ITEM UNIFICADO: I811412 | Desc Item: MODULO TOMADA 20A 250V~ SLIM MON'
         'ITEM UNIFICADO: I751421 | Desc Item: MODULO TOMADA 20A VERMELHA - VIVAZ',
 ]
 
+def return_models():
+    import cloudpickle
+    import pandas as pd
+
+    with open('Model/trained_pipeline.pkl', 'rb') as file:
+        pipeline = cloudpickle.load(file)
+
+    models, _ = pipeline.transform(pd.DataFrame({'ITEM UNIFICADO': ['I811412'], 'QTD': [1], 'PROCESSO': ['REBITAR AUTOMATICO'], 'PRESTADOR OU AUTOMAÇÃO': ['AUTOMAÇÃO']}))
+
+    return models
+
 def capture_item(concatenated_item):
 
     splitted_item = concatenated_item.split(' ')[2]
@@ -43,6 +54,9 @@ def inicialize_variables():
 
     if not 'type_detail' in st.session_state:
         st.session_state.type_detail = 'Tabelas'
+
+    if not 'active_button' in st.session_state:
+        st.session_state.active_button = None
 
 
 def get_first_data():
@@ -94,9 +108,22 @@ def get_predictions(df_for_pred_auto, df_for_pred_prestador):
         trained_pipeline = cloudpickle.load(file)
 
 
-    prediction_auto = trained_pipeline.transform(df_for_pred_auto)
-    prediction_prest = trained_pipeline.transform(df_for_pred_prestador)
+    _, prediction_auto = trained_pipeline.transform(df_for_pred_auto)
+    _, prediction_prest = trained_pipeline.transform(df_for_pred_prestador)
 
-    return prediction_auto, prediction_prest
+    models, _ = trained_pipeline.transform(df_for_pred_auto)
 
+    return models, prediction_auto, prediction_prest
+
+def get_models_info(models):
     
+    import pandas as pd
+
+    df_models_params = pd.DataFrame()
+
+    for model in models:
+            
+        df_models_params[type(model).__name__] = model.get_params()
+    
+    return df_models_params
+

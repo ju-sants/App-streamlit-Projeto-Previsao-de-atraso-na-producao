@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 from utils import inicialize_variables, get_first_data, set_data_for_modeling, get_predictions
 
@@ -25,13 +26,18 @@ df_for_pred_auto, df_for_pred_prestador = set_data_for_modeling()
 
 
 try:
-    prediction_auto, prediction_prest = get_predictions(df_for_pred_auto, df_for_pred_prestador)
 
-except:
+    models, prediction_auto, prediction_prest = get_predictions(df_for_pred_auto, df_for_pred_prestador)
+
+except Exception as e:
 
     st.write('&nbsp;', unsafe_allow_html=True)
     st.image('App\Imgs\espera_pag_predi.png')
     st.markdown('### ***Tente adicionar itens para visualizar as previsões!***')
+
+    if st.checkbox('Mostrar erro', key='show_error'):
+
+        st.error(e)
 
 # ----------------- Exibição dos resultados ----------------- #
 
@@ -113,6 +119,9 @@ else:
             col_detail_auto.write(f'Maior previsão de atraso: {max_auto} dia(s)')
             col_detail_auto.write(f'Menor previsão de atraso: {min_auto} dia(s)')
 
+            fig_auto = px.bar(x=['Máximo', 'Média', 'Mínimo'], y=[max_auto, mean_auto, min_auto], title='Métricas de Atraso', height=300, text_auto=True).update_traces(marker_color='rgb(0,202,225)', marker_line_color='rgb(0,48,107)', marker_line_width=1.5, opacity=0.6)
+            col_detail_auto.plotly_chart(fig_auto, use_container_width=True)
+
             middle.markdown('<div style="text-align: center; font-weight: bold;">VERSUS</div>', unsafe_allow_html=True)
 
             col_detail_prest.markdown('Para ***PRESTADOR***: ')
@@ -120,8 +129,35 @@ else:
             col_detail_prest.write(f'Maior previsão de atraso: {max_prest} dia(s)')
             col_detail_prest.write(f'Menor previsão de atraso: {min_prest} dia(s)')
 
+            fig_prest = px.bar(x=['Máximo', 'Média', 'Mínimo'], y=[max_prest, mean_prest, min_prest], title='Métricas de Atraso', height=300, text_auto=True).update_traces(marker_color='rgb(0,202,225)', marker_line_color='rgb(0,48,107)', marker_line_width=1.5, opacity=0.6)
+            col_detail_prest.plotly_chart(fig_prest, use_container_width=True)
 
-            st.markdown('---')
+            
+
+
+            st.write('<div style="text-align: center;  font-weight: bold;">Estatísticas descritivas das previsões: <div> &nbsp;', unsafe_allow_html=True)
+            
+            st.write('Para cada linha que passamos para predição, temos 20 previsões de diferentes modelos.')
+            st.write('Aqui estão algumas estatísticas descritivas dessas previsões:')
+
+
+            explicacoes = [
+                'Total de Previsões.',
+                'Média das previsões.',
+                'Variação das previsões, indica quantos pontos as previsões variam de sua média.',
+                'Menor previsão de atraso.',
+                'Até 25% das previsões estão abaixo desse limiar. Primeiro Quartil.',
+                'Até 50% das previsões estão abaixo desse limiar, ponto central. Mediana ou segundo Quartil.',
+                'Até 75% das previsões estão abaixo desse limiar. Terceiro Quartil.',
+                'Maior previsão de atraso.'
+            ]
+
+            stats = predictions_line.describe().to_frame('valores')
+            stats['Explicações'] = explicacoes
+            stats.index = ['Total', 'Média', 'Variação', 'Mínimo', '25%', '50%', '75%', 'Máximo']
+
+            st.write(stats, use_container_width=True)
+
 
 
 
@@ -139,21 +175,8 @@ else:
                 st.write(prediction_prest.iloc[line].to_frame().T.iloc[:, 6:])
 
 
-            if st.checkbox('Informações', key=f'checkbox_informations_{line}'):
+            if st.checkbox('Informações adicionais', key=f'checkbox_additional_informations_{line}'):
 
-
-                col_results_auto, col_results_prest = st.columns(2)
-
-
-                col_results_auto.write('Previsões de atraso para AUTOMAÇÃO: ')
-                for column, lines in prediction_auto.iloc[line].to_frame().T.items():
-                    values = ', '.join(map(str, lines.values))
-                    col_results_auto.write(f'Para o modelo {column} entre: {values} dia(s) atrasado')
-
-                col_results_prest.write('Previsões de atraso para PRESTADOR: ')
-                for column, lines in prediction_prest.iloc[line].to_frame().T.items():
-                    values = ', '.join(map(str, lines.values))
-                    col_results_prest.write(f'Para o modelo {column} entre: {values} dia(s) atrasado')
-
+                st.write('Pensando nisto...')
             else:
                 st.markdown('---')
