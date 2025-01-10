@@ -1,0 +1,2 @@
+Models,neg_mean_squared_error,neg_root_mean_squared_error,neg_mean_absolute_error
+MLPRegressor,-702.4366285058239,-26.346643743000108,-18.74134359972697

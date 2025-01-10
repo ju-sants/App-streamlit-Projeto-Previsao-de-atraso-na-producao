@@ -1,0 +1,2 @@
+Models,neg_mean_squared_error,neg_root_mean_squared_error,neg_mean_absolute_error
+DecisionTreeRegressor,-828.9301473289864,-28.634169737015167,-20.438641364361075

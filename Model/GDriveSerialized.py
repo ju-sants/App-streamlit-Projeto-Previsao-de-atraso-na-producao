@@ -1,5 +1,5 @@
 def get_model():
-    import cloudpickle
+    import dill
     import requests
 
     url = 'https://drive.google.com/uc?id=1-MFsywHy0Ddcp8EH5z88CXARJoQFH8av'
@@ -10,7 +10,7 @@ def get_model():
         f.write(file.content)
 
     with open('Model/trained_pipeline.pkl', 'rb') as f:
-        model = cloudpickle.load(f)
+        model = dill.load(f)
         
     return model
 

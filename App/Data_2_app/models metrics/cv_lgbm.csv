@@ -1,0 +1,2 @@
+Models,neg_mean_squared_error,neg_root_mean_squared_error,neg_mean_absolute_error
+LGBMRegressor,-870.1452858348515,-29.26022555002428,-19.782920211958277

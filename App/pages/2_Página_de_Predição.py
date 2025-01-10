@@ -43,12 +43,28 @@ except Exception as e:
 
 else:
 
+ # ----------------- Salvando predições ---------------------
+
+    new_predictions = pd.concat([prediction_auto, prediction_prest])
+    new_predictions['Montadores'] = ['AUTOMAÇÃO', 'PRESTADOR']
+
+    try:
+        past_predictions = pd.read_csv('App/Data_2_app/Past predictions/past_predictions.csv')
+        past_predictions = pd.concat([past_predictions, new_predictions])
+        past_predictions.to_csv('App/Data_2_app/Past predictions/past_predictions.csv', index=False)    
+
+    
+    except:
+        new_predictions.to_csv('App/Data_2_app/Past predictions/past_predictions.csv', index=False)
+    
+
+
     type_exibition = st.selectbox('Selecione o tipo de exibição: ', ['Resumo', 'Detalhes'], key='type_exibition')
 
     for line in range(len(df_for_pred)):
      
-        mean_auto = prediction_auto.iloc[line].T.mean()
-        mean_prest = prediction_prest.iloc[line].T.mean()
+        mean_auto = round(prediction_auto.iloc[line].T.mean(), 2)
+        mean_prest = round(prediction_prest.iloc[line].T.mean())
 
         max_auto = prediction_auto.iloc[line].T.max()
         max_prest = prediction_prest.iloc[line].T.max()
@@ -100,7 +116,7 @@ else:
             
 
 
-            st.markdown(f'- **Uma média GERAL de: {predictions_line.mean()} dia(s) de atraso**')
+            st.markdown(f'- **Uma média GERAL de: {round(predictions_line.mean(), 2)} dia(s) de atraso**')
 
             if min([mean_auto, mean_prest]) == mean_auto:
                 st.markdown(f'- **Para este caso, o montador com menor chance de atraso foi AUTOMAÇÃO com: {mean_auto} dia(s)**')
@@ -120,7 +136,7 @@ else:
             col_detail_auto.write(f'Menor previsão de atraso: {min_auto} dia(s)')
 
             fig_auto = px.bar(x=['Máximo', 'Média', 'Mínimo'], y=[max_auto, mean_auto, min_auto], title='Métricas de Atraso', height=300, text_auto=True).update_traces(marker_color='rgb(0,202,225)', marker_line_color='rgb(0,48,107)', marker_line_width=1.5, opacity=0.6)
-            col_detail_auto.plotly_chart(fig_auto, use_container_width=True)
+            col_detail_auto.plotly_chart(fig_auto, use_container_width=True, key=f'plotly_chart_auto{line}')
 
             middle.markdown('<div style="text-align: center; font-weight: bold;">VERSUS</div>', unsafe_allow_html=True)
 
@@ -130,7 +146,7 @@ else:
             col_detail_prest.write(f'Menor previsão de atraso: {min_prest} dia(s)')
 
             fig_prest = px.bar(x=['Máximo', 'Média', 'Mínimo'], y=[max_prest, mean_prest, min_prest], title='Métricas de Atraso', height=300, text_auto=True).update_traces(marker_color='rgb(0,202,225)', marker_line_color='rgb(0,48,107)', marker_line_width=1.5, opacity=0.6)
-            col_detail_prest.plotly_chart(fig_prest, use_container_width=True)
+            col_detail_prest.plotly_chart(fig_prest, use_container_width=True, key=f'plotly_chart_prest_{line}')
 
             
 
@@ -166,13 +182,13 @@ else:
                 st.write('#### ***Obs: Cada coluna representa um modelo preditivo!***')
 
                 st.subheader('Previsões de atraso para AUTOMAÇÃO: ')
-                st.write(prediction_auto.iloc[line].to_frame().T.iloc[:, :6])
-                st.write(prediction_auto.iloc[line].to_frame().T.iloc[:, 6:])
+                st.write(prediction_auto.iloc[line].to_frame().T.iloc[:, :8])
+                st.write(prediction_auto.iloc[line].to_frame().T.iloc[:, 8:])
                 
 
                 st.subheader('Previsões de atraso para PRESTADOR: ')
-                st.write(prediction_prest.iloc[line].to_frame().T.iloc[:, :6])
-                st.write(prediction_prest.iloc[line].to_frame().T.iloc[:, 6:])
+                st.write(prediction_prest.iloc[line].to_frame().T.iloc[:, :8])
+                st.write(prediction_prest.iloc[line].to_frame().T.iloc[:, 8:])
 
 
             if st.checkbox('Informações adicionais', key=f'checkbox_additional_informations_{line}'):

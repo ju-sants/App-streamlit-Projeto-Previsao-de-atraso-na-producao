@@ -1,0 +1,2 @@
+Models,neg_mean_squared_error,neg_root_mean_squared_error,neg_mean_absolute_error
+KNeighborsRegressor,-756.9836792885828,-27.344175319448823,-20.224033275960984
