@@ -28,7 +28,7 @@ itens = ['ITEM UNIFICADO: I811412 | Desc Item: MODULO TOMADA 20A 250V~ SLIM MON'
 
 def return_metrics_dfs():
     import pandas as pd
-    models_names = ["SVR - tunned",
+    models_names = [
     "SVR",
     "LGBMRegressor - tunned",
     "TheilSenRegressor",
@@ -46,7 +46,7 @@ def return_metrics_dfs():
     "MLPRegressor",
     "AdaBoostRegressor - tunned"]
 
-    archives = ["cv_svm.csv",
+    archives = [
     "cv_svr_norm.csv",
     "cv_lgbm.csv",
     "cv_ts.csv",
@@ -222,4 +222,3 @@ def get_models_info(models):
         df_models_params[type(model).__name__] = model.get_params()
     
     return df_models_params
-
