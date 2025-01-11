@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 from utils import return_models, inicialize_variables, return_metrics_dfs, return_models_exp
 
-st.set_page_config(page_title="Informações", page_icon=r"C:\Users\yamim\OneDrive\Documentos\App Streamlit Projeto Predição Dias Atrasados\Imgs\Home_PageIcon1.png", layout="wide")
+st.set_page_config(page_title="Informações", page_icon=r"App/Imgs/Home_PageIcon1.png", layout="wide")
 
 inicialize_variables()
 
@@ -160,7 +160,7 @@ if exibition == 'Informações técnicas dos modelos':
                     limiar_central = st.radio('Com base em que limiar?: ', ['Média', 'Mediana'])
 
                     try:
-                        all_predictions = pd.read_csv('App\Data_2_app\Past predictions\past_predictions.csv')
+                        all_predictions = pd.read_csv('App/Data_2_app/Past predictions/past_predictions.csv')
                     
                     except Exception:
                         st.error('Faça Predições primeiro.')

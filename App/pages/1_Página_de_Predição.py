@@ -7,7 +7,7 @@ from utils import inicialize_variables, get_first_data, set_data_for_modeling, g
 
 # ----------------- Inicializando ambiente ----------------- #
 
-st.set_page_config(page_title='Página de Predição', layout='wide', page_icon='App\Imgs\Home_PageIcon1.png')
+st.set_page_config(page_title='Página de Predição', layout='wide', page_icon='App/Imgs/Home_PageIcon1.png')
 
 inicialize_variables()
 
@@ -32,7 +32,7 @@ try:
 except Exception as e:
 
     st.write('&nbsp;', unsafe_allow_html=True)
-    st.image('App\Imgs\espera_pag_predi.png')
+    st.image('App/Imgs/espera_pag_predi.png')
     st.markdown('### ***Tente adicionar itens para visualizar as previsões!***')
 
     if st.checkbox('Mostrar erro', key='show_error'):
