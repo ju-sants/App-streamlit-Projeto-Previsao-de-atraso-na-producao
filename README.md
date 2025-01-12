@@ -2,6 +2,8 @@
 
 Bem-vindo ao **Previsor de Atrasos na Produção**! Este aplicativo é uma ferramenta poderosa e intuitiva que utiliza **modelos preditivos** para ajudar na tomada de decisões, oferecendo estimativas confiáveis sobre atrasos na produção de itens.
 
+**Obs:** o App ainda não está documentado, devido a situação em que foi desenvolvido, em breve será resolvido.
+
 ## O que este app faz?
 
 - **Previsão de atrasos**: Insira as informações do item (código, quantidade e processo) e obtenha a estimativa de dias de atraso.
