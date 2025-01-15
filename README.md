@@ -62,7 +62,7 @@ Na página inicial:
 ## Como executar o app localmente?
 1. Clone este repositório:
    ```bash
-   git clone <URL_DO_REPOSITORIO>
+   git clone https://github.com/ju-sants/automacao-Global-System.git
    ```
 2. Instale as dependências:
    ```bash
